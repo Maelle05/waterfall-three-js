@@ -56,7 +56,6 @@ noiseWaterTexture.wrapT = THREE.RepeatWrapping;
 /**
  * Materials
  */
-// Baked material
 const bakedMaterial = new THREE.MeshBasicMaterial({ map: bakedTexture })
 const waterMaterial = new THREE.ShaderMaterial({
   vertexShader: waterVertexShader,
@@ -68,6 +67,17 @@ const waterMaterial = new THREE.ShaderMaterial({
       uRiverLightColor: { value: new THREE.Color(debugObject.riverLightColor) },
       uNoiseWater: { value: noiseWaterTexture }
   },
+})
+const riptideMaterial = new THREE.ShaderMaterial({
+  transparent: true,
+  depthWrite: false,
+  uniforms:
+  {
+    uTime: { value: 0 },
+    uPixelRatio: { value: Math.min(window.devicePixelRatio, 2) }
+  },
+  vertexShader: riptideVertexShader,
+  fragmentShader: riptideFragmentShader
 })
 
 /**
@@ -133,21 +143,9 @@ for(let i = 0; i < riptideCount; i++)
 
 riptideGeometry.setAttribute('position', new THREE.BufferAttribute(positionArray, 3))
 riptideGeometry.setAttribute('aScale', new THREE.BufferAttribute(scaleArray, 1))
-// Material
-const riptideMaterial = new THREE.ShaderMaterial({
-  transparent: true,
-  depthWrite: false,
-  uniforms:
-  {
-    uTime: { value: 0 },
-    uPixelRatio: { value: Math.min(window.devicePixelRatio, 2) }
-  },
-  vertexShader: riptideVertexShader,
-  fragmentShader: riptideFragmentShader
-})
-// Points
 const riptide = new THREE.Points(riptideGeometry, riptideMaterial)
 scene.add(riptide)
+
 
 /**
  * Kayak
@@ -162,6 +160,9 @@ const initKayak = () => {
   // Set pos
   kayak.position.x = -0.75
   kayak.position.y = 0.65
+
+  // Set rotation
+  kayak.rotation.y = 60
 }
 
 

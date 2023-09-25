@@ -24,9 +24,13 @@ void main()
     modelPosition.y += noise(uTime * 6. + modelPosition.z * 0.4 + modelPosition.x + rand(modelPosition.x)) * endFallRiver * 0.3 * endFallRiverY;
     modelPosition.y -= (1. - endFallRiverY) * 0.05;
 
+    float mainRiver = smoothstep(0.27, 0.32, vUv.x) * smoothstep(0.99, 0.93, vUv.x);
+    modelPosition.y += noise(uTime * 2. - noise(modelPosition.x)) * mainRiver * 0.1;
+
+    float deepFallRiver = smoothstep(0.90, 1., vUv.x);
+    modelPosition.x += noise(uTime * 2. + modelPosition.y) * deepFallRiver * 0.2;
+
     vec4 viewPosition = viewMatrix * modelPosition;
     vec4 projectionPosition = projectionMatrix * viewPosition;
-
-
     gl_Position = projectionPosition;
 }
