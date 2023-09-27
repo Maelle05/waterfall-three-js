@@ -26,6 +26,7 @@ const debugObject = {
   riverBaseColor: '#b9eadd',
   riverLightColor: '#b6dee4',
 }
+gui.close()
 
 // Canvas
 const canvas = document.querySelector('canvas.webgl')
@@ -163,6 +164,9 @@ gltfLoader.load(
 
         if (child.name === 'Bird') {
           bird = child
+          bird.position.x = 0
+          bird.position.y = 0
+          bird.position.z = 0
           bird.removeFromParent()
           initBirds()
         }
@@ -182,6 +186,24 @@ const initRiver = () => {
   riverGui.addColor(debugObject, 'riverLightColor').onChange(()=>{
     waterMaterial.uniforms.uRiverLightColor.value = new THREE.Color(debugObject.riverLightColor)
   })
+}
+
+/**
+ * Kayak
+ */
+const initKayak = () => {
+  // Debug
+  const kayakGui = gui.addFolder('Kayak')
+  kayakGui.add(kayak.position, 'x', -5, 8)
+  kayakGui.add(kayak.position, 'y', 0, 10)
+  kayakGui.add(kayak.position, 'z', 0, 10)
+
+  // Set pos
+  kayak.position.x = -0.75
+  kayak.position.y = 0.65
+
+  // Set rotation
+  kayak.rotation.y = 60
 }
 
 /**
@@ -213,12 +235,11 @@ let birdGeometry = null
 const birdsCount = 10
 const birdsPositionArray = new Float32Array(birdsCount * 3)
 const birdsGapArray = new Float32Array(birdsCount)
-const basePositionBirds = {
-  x: -10,
-  y: 0,
-  z: 0
-}
 let birds = null
+
+let birdsMoveStep = 0
+let birdsPoss = null
+let birdsTargetPos = null
 const initBirds = () => {
   /* Ici il fallait recréer un géométrie instanciée, et lui
   passer les index et attributs de la géométrie chargée
@@ -230,10 +251,11 @@ const initBirds = () => {
   
   for(let i = 0; i < birdsCount; i++)
   {
-    birdsPositionArray[i * 3 + 0] = Math.random()
+    birdsPositionArray[i * 3 + 0] = (Math.random() - 0.5)
     birdsPositionArray[i * 3 + 1] = Math.random()
-    birdsPositionArray[i * 3 + 2] = Math.random()
-    birdsGapArray[i] = Math.random()
+    birdsPositionArray[i * 3 + 2] = (Math.random() - 0.5)
+    const gap = Math.random()
+    birdsGapArray[i] = gap
   }
 
   /* Ici il fallait remplacer le BufferAttribute par un 
@@ -242,32 +264,52 @@ const initBirds = () => {
   qui composent une seule instance */
   birdGeometry.setAttribute('instancePosition', new THREE.InstancedBufferAttribute(birdsPositionArray, 3))
   birdGeometry.setAttribute('aGap', new THREE.BufferAttribute(birdsGapArray, 1))
-  birds = new THREE.Mesh(birdGeometry, birdsMaterial)
 
-  birds.position.y = 2
-  birds.position.x = -10
-  birds.castShadow = true
+  var center = new THREE.Vector3();
+  birdGeometry.computeBoundingBox();
+  birdGeometry.boundingBox.getCenter(center);
+  birdGeometry.center();
+  
+  birds = new THREE.Mesh(birdGeometry, birdsMaterial)
+  birds.position.copy(center);
+  birds.scale.x = 0.7
+  birds.scale.y = 0.7
+  birds.scale.z = 0.7
+
   scene.add(birds)
 }
-
-/**
- * Kayak
- */
-const initKayak = () => {
-  // Debug
-  const kayakGui = gui.addFolder('Kayak')
-  kayakGui.add(kayak.position, 'x', -5, 8)
-  kayakGui.add(kayak.position, 'y', 0, 10)
-  kayakGui.add(kayak.position, 'z', 0, 10)
-
-  // Set pos
-  kayak.position.x = -0.75
-  kayak.position.y = 0.65
-
-  // Set rotation
-  kayak.rotation.y = 60
+// Create random Spline for birds annim
+const initialPoints = []
+const nbPointsCurve = 8
+for (let i = 0; i < nbPointsCurve; i++) {
+  initialPoints.push({
+    x: (Math.random() - 0.5) * 5 + 1.5,
+    y: Math.random() * 1.5 + 1.3,
+    z: (Math.random() - 0.5) * 4 - 1
+  })
 }
-
+// create cube for each point of the curve
+const boxGeometry = new THREE.BoxGeometry( 0.5, 0.5, 0.5 )
+const boxMaterial = new THREE.MeshBasicMaterial({ color: 'red'})
+const curveHandles = []
+for ( const handlePos of initialPoints ) {
+  const handle = new THREE.Mesh( boxGeometry, boxMaterial )
+  handle.position.copy( handlePos )
+  curveHandles.push( handle )
+}
+// Calculate Smooth curve
+const curve = new THREE.CatmullRomCurve3(
+  curveHandles.map( ( handle ) => handle.position )
+)
+curve.curveType = 'catmullrom'
+curve.closed = true
+curve.tension = 3
+// const points = curve.getPoints( 80 )
+// const line = new THREE.LineLoop(
+//   new THREE.BufferGeometry().setFromPoints( points ),
+//   new THREE.LineBasicMaterial( { color: 0xff0000 } )
+// )
+// scene.add(line)
 
 /**
  * Sizes
@@ -300,14 +342,15 @@ window.addEventListener('resize', () =>
  */
 // Base camera
 const camera = new THREE.PerspectiveCamera(45, sizes.width / sizes.height, 0.1, 100)
-camera.position.x = 7
-camera.position.y = 6
+camera.position.x = 7.10
+camera.position.y = 4
 camera.position.z = 9
+camera.lookAt(new THREE.Vector3(-0.5, 0.7, 0));
 scene.add(camera)
 const camGui = gui.addFolder('Camera')
 camGui.add(camera.position, 'x', 0, 10)
 camGui.add(camera.position, 'y', 0, 10)
-camGui.add(camera.position, 'z', 0, 10)
+camGui.add(camera.position, 'z', 0, 20)
 
 // Controls
 const controls = new OrbitControls(camera, canvas)
@@ -355,8 +398,12 @@ const tick = () =>
     }
     // Update birds
     if (birds) {
-      birds.position.x = basePositionBirds.x + Math.sin(elapsedTime)
-      birds.position.z = basePositionBirds.z + Math.sin(elapsedTime)
+      birdsPoss = curve.getPointAt(birdsMoveStep)
+      const birdsNextPos = (birdsMoveStep + 0.0005) % 1
+      birdsTargetPos = curve.getPointAt(birdsNextPos)
+      birdsMoveStep = birdsNextPos
+      birds.position.copy(birdsPoss)
+      birds.lookAt(birdsTargetPos)
     }
 
     // Render
