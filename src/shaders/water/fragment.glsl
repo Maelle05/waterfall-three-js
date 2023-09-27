@@ -1,8 +1,13 @@
-varying vec2 vUv;
+#include <packing>
+
 uniform float uTime;
 uniform vec3 uRiverBaseColor;
 uniform vec3 uRiverLightColor;
 uniform sampler2D uNoiseWater;
+uniform sampler2D uDepthMap;
+
+varying vec4 vShadowCoord;
+varying vec2 vUv;
 
 void main()
 {
@@ -32,6 +37,19 @@ void main()
   // Mix
   vec3 fallColorMix =  mix(mix(vec3(.96, 0.96, 1.), fallColor, deepFallRiver), fallColor, fallRiver);
   vec3 finalColor = mix(mix(fallColorMix, mainColor, topRiver), mainColor, mainRiver);
+
+  // Shadow
+  vec3 shadowCoord = vShadowCoord.xyz / vShadowCoord.w * 0.5 + 0.5;
+  float depth_shadowCoord = shadowCoord.z;
+
+  vec2 depthMapUv = shadowCoord.xy;
+  float depth_depthMap = unpackRGBAToDepth(texture2D(uDepthMap, depthMapUv));
+
+  // Compare and if the depth value is smaller than the value in the depth map, then there is an occluder and the shadow is drawn.
+  float shadowFactor = step(depth_shadowCoord, depth_depthMap);
+
+  vec3 shadow = vec3(shadowFactor);
   
-  gl_FragColor = vec4(finalColor, 0.97);
+  vec3 finalShadowColor = mix(finalColor - 0.2, finalColor ,shadow);
+  gl_FragColor = vec4(finalShadowColor, 0.97);
 }

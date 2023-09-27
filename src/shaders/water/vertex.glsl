@@ -1,6 +1,11 @@
 varying vec2 vUv;
 uniform float uTime;
 
+uniform mat4 uShadowCameraP;
+uniform mat4 uShadowCameraV;
+
+varying vec4 vShadowCoord;
+
 float rand(float n){return fract(sin(n) * 43758.5453123);}
 
 //	<https://www.shadertoy.com/view/4dS3Wd>
@@ -33,4 +38,6 @@ void main()
     vec4 viewPosition = viewMatrix * modelPosition;
     vec4 projectionPosition = projectionMatrix * viewPosition;
     gl_Position = projectionPosition;
+
+    vShadowCoord = uShadowCameraP * uShadowCameraV * modelMatrix * vec4(position, 1.0);
 }
