@@ -13,6 +13,7 @@ import birdsVertexShader from './shaders/birds/vertex.glsl'
 import birdsFragmentShader from './shaders/birds/fragment.glsl'
 import bakedVertexShader from './shaders/baked/vertex.glsl'
 import bakedFragmentShader from './shaders/baked/fragment.glsl'
+import { seededRandom } from 'three/src/math/MathUtils'
 
 /**
  * Base
@@ -263,7 +264,7 @@ const initBirds = () => {
   ils seront pour chaque point, et pas pour tous les points
   qui composent une seule instance */
   birdGeometry.setAttribute('instancePosition', new THREE.InstancedBufferAttribute(birdsPositionArray, 3))
-  birdGeometry.setAttribute('aGap', new THREE.BufferAttribute(birdsGapArray, 1))
+  birdGeometry.setAttribute('aGap', new THREE.InstancedBufferAttribute(birdsGapArray, 1))
 
   var center = new THREE.Vector3();
   birdGeometry.computeBoundingBox();
@@ -283,11 +284,12 @@ const initialPoints = []
 const nbPointsCurve = 8
 for (let i = 0; i < nbPointsCurve; i++) {
   initialPoints.push({
-    x: (Math.random() - 0.5) * 5 + 1.5,
-    y: Math.random() * 1.5 + 1.3,
-    z: (Math.random() - 0.5) * 4 - 1
+    x: (seededRandom(3 + i) - 0.5) * 5 + 1.5,
+    y: seededRandom(100 + i) * 1.5 + 1.3,
+    z: (seededRandom(4 + i) - 0.5) * 4 
   })
 }
+
 // create cube for each point of the curve
 const boxGeometry = new THREE.BoxGeometry( 0.5, 0.5, 0.5 )
 const boxMaterial = new THREE.MeshBasicMaterial({ color: 'red'})
@@ -303,12 +305,12 @@ const curve = new THREE.CatmullRomCurve3(
 )
 curve.curveType = 'catmullrom'
 curve.closed = true
-curve.tension = 3
-// const points = curve.getPoints( 80 )
-// const line = new THREE.LineLoop(
-//   new THREE.BufferGeometry().setFromPoints( points ),
-//   new THREE.LineBasicMaterial( { color: 0xff0000 } )
-// )
+curve.tension = 1.5
+const points = curve.getPoints( 80 )
+const line = new THREE.LineLoop(
+  new THREE.BufferGeometry().setFromPoints( points ),
+  new THREE.LineBasicMaterial( { color: 0xff0000 } )
+)
 // scene.add(line)
 
 /**
@@ -391,7 +393,7 @@ const tick = () =>
     // Update kayak
     if (kayak) {
       kayak.position.z = Math.sin(elapsedTime) * 0.4
-      kayak.position.y = Math.sin(elapsedTime * 1.3 - 1.6) * 0.05 + 0.6
+      kayak.position.y = Math.sin(elapsedTime * 1.3 - 1.6) * 0.05 + 0.64
       kayak.position.x = Math.sin(elapsedTime * 0.5) + 0.7
 
       kayak.rotation.y = 59.6 + Math.sin(elapsedTime) * 0.3
