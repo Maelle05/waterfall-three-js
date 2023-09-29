@@ -26,6 +26,7 @@ const debugObject = {
   clearColor: '#f0C5b2',
   riverBaseColor: '#b9eadd',
   riverLightColor: '#b6dee4',
+  birdsColor: '#594040'
 }
 gui.close()
 
@@ -52,7 +53,7 @@ gltfLoader.setDRACOLoader(dracoLoader)
 /**
  * Textures
  */
-const bakedTexture = textureLoader.load('baking maeelllle 8.2.png')
+const bakedTexture = textureLoader.load('baking maeelllle 11.4.png')
 bakedTexture.flipY = false
 const noiseWaterTexture = textureLoader.load('textureWater.jpg')
 noiseWaterTexture.wrapS = THREE.RepeatWrapping;
@@ -129,7 +130,8 @@ const birdsMaterial = new THREE.ShaderMaterial({
   uniforms:
   {
     uTime: { value: 0 },
-    uShadowRender: { value: false }
+    uShadowRender: { value: false },
+    uBirdsColor: { value: new THREE.Color(debugObject.birdsColor) }
   },
   vertexShader: birdsVertexShader,
   fragmentShader: birdsFragmentShader,
@@ -146,31 +148,30 @@ let bird = null
  * Model
  */
 gltfLoader.load(
-  'waterfallV2.1.glb',
+  'waterfallV4.4.glb',
   (gltf) =>
   {
-    gltf.scene.traverse((child) =>
-    {
-        if (child.name === 'River') {
-          child.material = waterMaterial
-          initRiver()
-        } else {
-          child.material = bakedMaterial
-        }
+    gltf.scene.traverse((child) => {
+      if (child.name === 'River') {
+        child.material = waterMaterial
+        initRiver()
+      } else {
+        child.material = bakedMaterial
+      }
 
-        if (child.name === 'Kayak') {
-          kayak = child
-          initKayak()
-        }
+      if (child.name === 'Kayak') {
+        kayak = child
+        initKayak()
+      }
 
-        if (child.name === 'Bird') {
-          bird = child
-          bird.position.x = 0
-          bird.position.y = 0
-          bird.position.z = 0
-          bird.removeFromParent()
-          initBirds()
-        }
+      if (child.name === 'Bird') {
+        bird = child
+        bird.position.x = 0
+        bird.position.y = 0
+        bird.position.z = 0
+        bird.removeFromParent()
+        initBirds()
+      }
     })
     scene.add(gltf.scene)
   }
@@ -278,6 +279,11 @@ const initBirds = () => {
   birds.scale.z = 0.7
 
   scene.add(birds)
+
+  const birdsGui = gui.addFolder('Birds')
+  birdsGui.addColor(debugObject, 'birdsColor').onChange(()=>{
+    birdsMaterial.uniforms.uBirdsColor.value = new THREE.Color(debugObject.birdsColor)
+  })
 }
 // Create random Spline for birds annim
 const initialPoints = []
@@ -401,7 +407,7 @@ const tick = () =>
     // Update birds
     if (birds) {
       birdsPoss = curve.getPointAt(birdsMoveStep)
-      const birdsNextPos = (birdsMoveStep + 0.0005) % 1
+      const birdsNextPos = (birdsMoveStep + 0.0004) % 1
       birdsTargetPos = curve.getPointAt(birdsNextPos)
       birdsMoveStep = birdsNextPos
       birds.position.copy(birdsPoss)
