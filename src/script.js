@@ -13,6 +13,8 @@ import birdsVertexShader from './shaders/birds/vertex.glsl'
 import birdsFragmentShader from './shaders/birds/fragment.glsl'
 import bakedVertexShader from './shaders/baked/vertex.glsl'
 import bakedFragmentShader from './shaders/baked/fragment.glsl'
+import flamesVertexShader from './shaders/flames/vertex.glsl'
+import flamesFragmentShader from './shaders/flames/fragment.glsl'
 import { seededRandom } from 'three/src/math/MathUtils'
 
 /**
@@ -138,17 +140,27 @@ const birdsMaterial = new THREE.ShaderMaterial({
   side: THREE.DoubleSide,
 })
 
+const flamesMaterial = new THREE.ShaderMaterial({
+  uniforms:
+  {
+    uTime: { value: 0 },
+  },
+  vertexShader: flamesVertexShader,
+  fragmentShader: flamesFragmentShader,
+})
+
 /**
  * Objects
  */
 let kayak = null
 let bird = null
+let flame = null
 
 /**
  * Model
  */
 gltfLoader.load(
-  'waterfallV4.4.glb',
+  'waterfallV4.5.glb',
   (gltf) =>
   {
     gltf.scene.traverse((child) => {
@@ -166,13 +178,16 @@ gltfLoader.load(
 
       if (child.name === 'Bird') {
         bird = child
-        bird.position.x = 0
-        bird.position.y = 0
-        bird.position.z = 0
-        bird.removeFromParent()
         initBirds()
       }
+
+      if(child.name === 'Fire') {
+        flame = child
+        initFlame()
+      }
     })
+    bird.removeFromParent()
+    flame.removeFromParent()
     scene.add(gltf.scene)
   }
 )
@@ -319,6 +334,47 @@ const line = new THREE.LineLoop(
 )
 // scene.add(line)
 
+
+/**
+ * Flame
+ */
+let flameGeometry = null
+const flamesCount = 100
+const flamesPositionArray = new Float32Array(flamesCount * 3)
+let flames = null
+
+const initFlame = () => {
+  flameGeometry = new THREE.InstancedBufferGeometry();
+  flameGeometry.index = flame.geometry.index;
+  flameGeometry.attributes = flame.geometry.attributes;
+  flameGeometry.instanceCount = flamesCount;
+  
+  for(let i = 0; i < flamesCount; i++)
+  {
+    flamesPositionArray[i * 3 + 0] = (Math.random() - 0.5)
+    flamesPositionArray[i * 3 + 1] = Math.random()
+    flamesPositionArray[i * 3 + 2] = (Math.random() - 0.5)
+  }
+
+  flameGeometry.setAttribute('instancePosition', new THREE.InstancedBufferAttribute(flamesPositionArray, 3))
+
+  var center = new THREE.Vector3();
+  flameGeometry.computeBoundingBox();
+  flameGeometry.boundingBox.getCenter(center);
+  flameGeometry.center();
+  
+  flames = new THREE.Mesh(flameGeometry, flamesMaterial)
+  flames.position.copy(center);
+  flames.position.z += 2.88
+  flames.position.y += 0.2
+  flames.position.x -= 0.68
+  flames.scale.x = 0.08
+  flames.scale.y = 0.08
+  flames.scale.z = 0.08
+
+  scene.add(flames)
+}
+
 /**
  * Sizes
  */
@@ -362,6 +418,8 @@ camGui.add(camera.position, 'z', 0, 20)
 
 // Controls
 const controls = new OrbitControls(camera, canvas)
+controls.target.set( -1, 0.5, -1 );
+controls.maxPolarAngle = Math.PI / 2
 controls.enableDamping = true
 
 /**
