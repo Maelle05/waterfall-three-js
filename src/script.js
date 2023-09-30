@@ -63,7 +63,6 @@ const gltfLoader = new GLTFLoader(manager)
 gltfLoader.setDRACOLoader(dracoLoader)
 
 manager.onProgress = ( url, itemsLoaded, itemsTotal) => {
-  console.log(itemsTotal, itemsLoaded);
   progress.style.width = (itemsLoaded * 100 / itemsTotal) + '%'
 }
 manager.onLoad = () => {
@@ -73,7 +72,7 @@ manager.onLoad = () => {
 /**
  * Textures
  */
-const bakedTexture = textureLoader.load('baking maeelllle 11.4.png',
+const bakedTexture = textureLoader.load('baking final 2.png',
   () => {
     console.log('Texture load ✨')
   }
@@ -183,7 +182,7 @@ let flame = null
  * Model
  */
 gltfLoader.load(
-  'waterfallV4.6.glb',
+  'waterfallV5.glb',
   (gltf) =>
   {
     gltf.scene.traverse((child) => {
@@ -245,6 +244,8 @@ const initKayak = () => {
 
   // Set rotation
   kayak.rotation.y = 60
+
+  kayak.scale.set(0.8, 0.8, 0.8)
 }
 
 /**
@@ -395,9 +396,9 @@ const initFlame = () => {
   
   flames = new THREE.Mesh(flameGeometry, flamesMaterial)
   flames.position.copy(center);
-  flames.position.z += 2.88
-  flames.position.y += 0.2
-  flames.position.x -= 0.68
+  flames.position.z += 2.9
+  flames.position.y += 0.18
+  flames.position.x -= 0.27
   flames.scale.x = 0.06
   flames.scale.y = 0.06
   flames.scale.z = 0.06
