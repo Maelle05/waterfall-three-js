@@ -351,9 +351,9 @@ const initFlame = () => {
   
   for(let i = 0; i < flamesCount; i++)
   {
-    flamesPositionArray[i * 3 + 0] = (Math.random() - 0.5)
-    flamesPositionArray[i * 3 + 1] = Math.random()
-    flamesPositionArray[i * 3 + 2] = (Math.random() - 0.5)
+    flamesPositionArray[i * 3 + 0] = (Math.random() - 0.5) * 1.2
+    flamesPositionArray[i * 3 + 1] = 1
+    flamesPositionArray[i * 3 + 2] = (Math.random() - 0.5) * 1.2
   }
 
   flameGeometry.setAttribute('instancePosition', new THREE.InstancedBufferAttribute(flamesPositionArray, 3))
@@ -368,9 +368,9 @@ const initFlame = () => {
   flames.position.z += 2.88
   flames.position.y += 0.2
   flames.position.x -= 0.68
-  flames.scale.x = 0.08
-  flames.scale.y = 0.08
-  flames.scale.z = 0.08
+  flames.scale.x = 0.06
+  flames.scale.y = 0.06
+  flames.scale.z = 0.06
 
   scene.add(flames)
 }
@@ -418,9 +418,13 @@ camGui.add(camera.position, 'z', 0, 20)
 
 // Controls
 const controls = new OrbitControls(camera, canvas)
-controls.target.set( -1, 0.5, -1 );
-controls.maxPolarAngle = Math.PI / 2
+controls.target.set( 1, 0, -0.5 );
+controls.maxPolarAngle = Math.PI / 2.3
+controls.minPolarAngle = Math.PI / 4
+controls.minAzimuthAngle = - Math.PI / 17;
+controls.maxAzimuthAngle = Math.PI;
 controls.enableDamping = true
+// controls.enableZoom = false
 
 /**
  * Renderer
@@ -453,6 +457,7 @@ const tick = () =>
     waterMaterial.uniforms.uTime.value = elapsedTime
     if(riptideMaterial) riptideMaterial.uniforms.uTime.value = elapsedTime
     birdsMaterial.uniforms.uTime.value = elapsedTime
+    flamesMaterial.uniforms.uTime.value = elapsedTime
 
     // Update kayak
     if (kayak) {

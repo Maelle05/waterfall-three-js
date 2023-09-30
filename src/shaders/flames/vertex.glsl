@@ -11,6 +11,8 @@ void main()
     vec3 pos = position;
     pos += instancePosition;
 
+    pos.y += sin(uTime);
+
     vec4 modelPosition = modelMatrix * vec4(pos, 1.0);
     vec4 viewPosition = viewMatrix * modelPosition;
     vec4 projectionPosition = projectionMatrix * viewPosition;
