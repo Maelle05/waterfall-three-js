@@ -34,9 +34,10 @@ gui.close()
 gui.hide();
 
 // Utils
-function randFloat(min, max) {
+const randFloat = (min, max) => {
   return Math.random() * (max - min) + min;
 }
+const clamp = (num, min, max) => Math.min(Math.max(num, min), max)
 
 // Canvas
 const canvas = document.querySelector('canvas.webgl')
@@ -490,7 +491,7 @@ const tick = () =>
     // Update kayak
     if (kayak) {
       kayak.position.z = Math.sin(elapsedTime) * 0.4
-      kayak.position.y = Math.sin(elapsedTime * 1.3 - 1.6) * 0.05 + 0.64
+      kayak.position.y = clamp(Math.sin(elapsedTime * 1.3) * 0.1, 0, 0.2) + 0.635
       kayak.position.x = Math.sin(elapsedTime * 0.5) + 0.7
 
       kayak.rotation.y = 59.6 + Math.sin(elapsedTime) * 0.3
