@@ -31,10 +31,15 @@ const debugObject = {
   birdsColor: '#594040'
 }
 gui.close()
+
 // Utils
 function randFloat(min, max) {
   return Math.random() * (max - min) + min;
 }
+
+// Dom loader
+const loader = document.querySelector('.loader')
+const progress = document.querySelector('.loader > .progressContainer > span')
 
 // Canvas
 const canvas = document.querySelector('canvas.webgl')
@@ -45,21 +50,34 @@ const scene = new THREE.Scene()
 /**
  * Loaders
  */
+const manager = new THREE.LoadingManager();
 // Texture loader
-const textureLoader = new THREE.TextureLoader()
+const textureLoader = new THREE.TextureLoader(manager)
 
 // Draco loader
 const dracoLoader = new DRACOLoader()
 dracoLoader.setDecoderPath('draco/')
 
 // GLTF loader
-const gltfLoader = new GLTFLoader()
+const gltfLoader = new GLTFLoader(manager)
 gltfLoader.setDRACOLoader(dracoLoader)
+
+manager.onProgress = ( url, itemsLoaded, itemsTotal) => {
+  console.log(itemsTotal, itemsLoaded);
+  progress.style.width = (itemsLoaded * 100 / itemsTotal) + '%'
+}
+manager.onLoad = () => {
+  loader.style.opacity = 0
+}
 
 /**
  * Textures
  */
-const bakedTexture = textureLoader.load('baking maeelllle 11.4.png')
+const bakedTexture = textureLoader.load('baking maeelllle 11.4.png',
+  () => {
+    console.log('Texture load ✨')
+  }
+)
 bakedTexture.flipY = false
 const noiseWaterTexture = textureLoader.load('textureWater.jpg')
 noiseWaterTexture.wrapS = THREE.RepeatWrapping;
@@ -194,6 +212,7 @@ gltfLoader.load(
     bird.removeFromParent()
     flame.removeFromParent()
     scene.add(gltf.scene)
+    console.log('Gltf load ✨')
   }
 )
 
@@ -429,7 +448,7 @@ camGui.add(camera.position, 'z', 0, 20)
 
 // Controls
 const controls = new OrbitControls(camera, canvas)
-controls.target.set( 1, 0, -0.5 );
+controls.target.set( -0.5, 0, -0.5 );
 controls.maxPolarAngle = Math.PI / 2.3
 controls.minPolarAngle = Math.PI / 4
 controls.minAzimuthAngle = - Math.PI / 17;
