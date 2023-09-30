@@ -58,3 +58,25 @@ body
   border-radius: 999px;
   transition: width 3s;
 }
+
+.info {
+  display: block;
+  font-family: 'PP Rader';
+  color: rgb(99, 47, 52);
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  padding: 10px 15px;
+  pointer-events: all;
+}
+
+.info a {
+  text-decoration: none;
+  cursor: pointer;
+  color: rgb(99, 47, 52);
+  transition: color .3s;
+}
+
+.info a:hover {
+  color: rgb(204, 139, 69);
+}

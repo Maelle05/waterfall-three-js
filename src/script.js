@@ -31,15 +31,12 @@ const debugObject = {
   birdsColor: '#594040'
 }
 gui.close()
+gui.hide();
 
 // Utils
 function randFloat(min, max) {
   return Math.random() * (max - min) + min;
 }
-
-// Dom loader
-const loader = document.querySelector('.loader')
-const progress = document.querySelector('.loader > .progressContainer > span')
 
 // Canvas
 const canvas = document.querySelector('canvas.webgl')
@@ -49,8 +46,13 @@ const scene = new THREE.Scene()
 
 /**
  * Loaders
- */
+*/
 const manager = new THREE.LoadingManager();
+
+// Dom loader
+const loader = document.querySelector('.loader')
+const progress = document.querySelector('.loader > .progressContainer > span')
+
 // Texture loader
 const textureLoader = new THREE.TextureLoader(manager)
 
@@ -83,10 +85,9 @@ noiseWaterTexture.wrapS = THREE.RepeatWrapping;
 noiseWaterTexture.wrapT = THREE.RepeatWrapping;
 
 /**
- * Light
+ * Fake Light for shadow
  */
 const light = new THREE.DirectionalLight( 0xffffff, 1.0 );
-//　The light is directed from the light's position to the origin of the world coordinates.
 light.position.set(3.36008, 4.6119, -3.38262);
 light.lookAt( 0, 0, 0)
 const frustumSize = 10;
@@ -120,11 +121,13 @@ const shadowUniforms = {
       value: light.shadow.camera.matrixWorldInverse
   }
 }
+
 const bakedMaterial = new THREE.ShaderMaterial({ 
   uniforms: {...shadowUniforms, uMap: { value: bakedTexture}},
   vertexShader: bakedVertexShader,
   fragmentShader: bakedFragmentShader,
 })
+
 const waterMaterial = new THREE.ShaderMaterial({
   vertexShader: waterVertexShader,
   fragmentShader: waterFragmentShader,
@@ -137,6 +140,7 @@ const waterMaterial = new THREE.ShaderMaterial({
     uNoiseWater: { value: noiseWaterTexture }
   },
 })
+
 const riptideMaterial = new THREE.ShaderMaterial({
   transparent: true,
   depthWrite: false,
@@ -283,9 +287,7 @@ let birdsMoveStep = 0
 let birdsPoss = null
 let birdsTargetPos = null
 const initBirds = () => {
-  /* Ici il fallait recréer un géométrie instanciée, et lui
-  passer les index et attributs de la géométrie chargée
-  et définier le nombre d'instance sur la géométrie */
+  // recreate instantiated geometry
   birdGeometry = new THREE.InstancedBufferGeometry();
   birdGeometry.index = bird.geometry.index;
   birdGeometry.attributes = bird.geometry.attributes;
@@ -300,10 +302,6 @@ const initBirds = () => {
     birdsGapArray[i] = gap
   }
 
-  /* Ici il fallait remplacer le BufferAttribute par un 
-  InstanceBufferAttribute, sinon les attributs que tu définies
-  ils seront pour chaque point, et pas pour tous les points
-  qui composent une seule instance */
   birdGeometry.setAttribute('instancePosition', new THREE.InstancedBufferAttribute(birdsPositionArray, 3))
   birdGeometry.setAttribute('aGap', new THREE.InstancedBufferAttribute(birdsGapArray, 1))
 
@@ -335,7 +333,6 @@ for (let i = 0; i < nbPointsCurve; i++) {
     z: (seededRandom(4 + i) - 0.5) * 4 
   })
 }
-
 // create cube for each point of the curve
 const boxGeometry = new THREE.BoxGeometry( 0.5, 0.5, 0.5 )
 const boxMaterial = new THREE.MeshBasicMaterial({ color: 'red'})
