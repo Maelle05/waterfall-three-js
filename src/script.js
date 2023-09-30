@@ -31,6 +31,10 @@ const debugObject = {
   birdsColor: '#594040'
 }
 gui.close()
+// Utils
+function randFloat(min, max) {
+  return Math.random() * (max - min) + min;
+}
 
 // Canvas
 const canvas = document.querySelector('canvas.webgl')
@@ -143,6 +147,7 @@ const birdsMaterial = new THREE.ShaderMaterial({
 const flamesMaterial = new THREE.ShaderMaterial({
   uniforms:
   {
+    uShadowRender: { value: false },
     uTime: { value: 0 },
   },
   vertexShader: flamesVertexShader,
@@ -339,8 +344,10 @@ const line = new THREE.LineLoop(
  * Flame
  */
 let flameGeometry = null
-const flamesCount = 100
+const flamesCount = 50
 const flamesPositionArray = new Float32Array(flamesCount * 3)
+const flamesSizeArray = new Float32Array(flamesCount)
+const flamesSpeedArray = new Float32Array(flamesCount)
 let flames = null
 
 const initFlame = () => {
@@ -351,12 +358,16 @@ const initFlame = () => {
   
   for(let i = 0; i < flamesCount; i++)
   {
-    flamesPositionArray[i * 3 + 0] = (Math.random() - 0.5) * 1.2
-    flamesPositionArray[i * 3 + 1] = 1
-    flamesPositionArray[i * 3 + 2] = (Math.random() - 0.5) * 1.2
+    flamesPositionArray[i * 3 + 0] = (Math.random() - 0.5) * 2.7
+    flamesPositionArray[i * 3 + 1] = -0.2
+    flamesPositionArray[i * 3 + 2] = (Math.random() - 0.5) * 2.7
+    flamesSizeArray[i] = randFloat(0.5, 1.0)
+    flamesSpeedArray[i] = randFloat(0.5, 1.0)
   }
 
   flameGeometry.setAttribute('instancePosition', new THREE.InstancedBufferAttribute(flamesPositionArray, 3))
+  flameGeometry.setAttribute('aSize', new THREE.InstancedBufferAttribute(flamesSizeArray, 1))
+  flameGeometry.setAttribute('aSpeed', new THREE.InstancedBufferAttribute(flamesSpeedArray, 1))
 
   var center = new THREE.Vector3();
   flameGeometry.computeBoundingBox();
@@ -480,8 +491,10 @@ const tick = () =>
     // Render
     if(light) {
       birdsMaterial.uniforms.uShadowRender.value = false
-      renderer.render(scene, camera)
+      flamesMaterial.uniforms.uShadowRender.value = false
+      renderer.render(scene, camera) 
       birdsMaterial.uniforms.uShadowRender.value = true
+      flamesMaterial.uniforms.uShadowRender.value = true
       renderer.setRenderTarget(light.shadow.map);
       renderer.render(scene, light.shadow.camera);
       renderer.setRenderTarget(null);
