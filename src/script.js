@@ -84,6 +84,7 @@ bakedTexture.flipY = false
 const noiseWaterTexture = textureLoader.load('textureWater.jpg')
 noiseWaterTexture.wrapS = THREE.RepeatWrapping;
 noiseWaterTexture.wrapT = THREE.RepeatWrapping;
+const birdTexture = textureLoader.load('birdTexture.png')
 
 /**
  * Fake Light for shadow
@@ -155,11 +156,14 @@ const riptideMaterial = new THREE.ShaderMaterial({
 })
 
 const birdsMaterial = new THREE.ShaderMaterial({
+  // transparent: true,
+  // depthWrite: false,
   uniforms:
   {
     uTime: { value: 0 },
     uShadowRender: { value: false },
-    uBirdsColor: { value: new THREE.Color(debugObject.birdsColor) }
+    uBirdsColor: { value: new THREE.Color(debugObject.birdsColor) },
+    uBirdTex: { value: birdTexture }
   },
   vertexShader: birdsVertexShader,
   fragmentShader: birdsFragmentShader,
@@ -187,7 +191,7 @@ let flame = null
  * Model
  */
 gltfLoader.load(
-  'waterfallV5.glb',
+  'waterfallV5.1.glb',
   (gltf) =>
   {
     gltf.scene.traverse((child) => {
@@ -313,9 +317,9 @@ const initBirds = () => {
   
   birds = new THREE.Mesh(birdGeometry, birdsMaterial)
   birds.position.copy(center);
-  birds.scale.x = 0.7
-  birds.scale.y = 0.7
-  birds.scale.z = 0.7
+  birds.scale.x = 0.5
+  birds.scale.y = 0.5
+  birds.scale.z = 0.5
 
   scene.add(birds)
 
